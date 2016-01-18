@@ -74,28 +74,28 @@ class shutit_openshift_dev(ShutItModule):
 		# 
 		shutit.send('mkdir -p $GOPATH/src/github.com/openshift')
 		shutit.send('cd $GOPATH/src/github.com/openshift')
-		shutit.send('git clone git://github.com/ianmiell/origin  # Replace <forkid> with the your github id')
+		shutit.send('rm -rf origin')
+		shutit.send('git clone git@github.com:ianmiell/origin')
 		shutit.send('cd origin')
 		shutit.send('git remote add upstream git://github.com/openshift/origin')
 		shutit.send('export OPENSHIFT_MEMORY=4192')
 		shutit.send('vagrant up')
 		shutit.login(command='vagrant ssh')
+		shutit.install('xterm')
+		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/go/bin/linux/amd64:/data/src/github.com/openshift/origin/_output/local/go/bin$PATH')
 		shutit.send('cd /data/src/github.com/openshift/origin')
 		shutit.send('make clean build')
-		shutit.pause_point('')
-		shutit.send('cd')
 		# update path to include binaries for oc, oadm, etc
 		# this is temporary, to make it persistent add it to .bash_profile
-		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/bin/linux/amd64:$PATH')
 		# redirect the logs to  /home/vagrant/openshift.log for easier debugging
 		shutit.send('sudo `which openshift` start --public-master=localhost &> openshift.log &')
-		shutit.send('sudo chmod +r openshift.local.config/master/openshift-registry.kubeconfig')
-		shutit.send('sudo chmod +r openshift.local.config/master/admin.kubeconfig')
-		shutit.send('oadm registry --create --credentials=openshift.local.config/master/openshift-registry.kubeconfig --config=openshift.local.config/master/admin.kubeconfig')
+		shutit.send('sudo chmod +r /openshift.local.config/master/openshift-registry.kubeconfig')
+		shutit.send('sudo chmod +r /openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oadm registry --create --credentials=/openshift.local.config/master/openshift-registry.kubeconfig --config=/openshift.local.config/master/admin.kubeconfig')
 		# load image stream
-		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/image-streams/image-streams-centos7.json -n openshift --config=openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/image-streams/image-streams-centos7.json -n openshift --config=/openshift.local.config/master/admin.kubeconfig')
 		# load templates
-		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/sample-app/application-template-stibuild.json -n openshift --config=openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/sample-app/application-template-stibuild.json -n openshift --config=/openshift.local.config/master/admin.kubeconfig')
 		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/db-templates --config=openshift.local.config/master/admin.kubeconfig')
 		shutit.send('echo now navigate to: https://localhost:8443/console')
 		shutit.logout()
