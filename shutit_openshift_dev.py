@@ -81,7 +81,9 @@ class shutit_openshift_dev(ShutItModule):
 		shutit.send('export OPENSHIFT_MEMORY=4192')
 		shutit.send('vagrant up')
 		shutit.login(command='vagrant ssh')
+		shutit.login(password='vagrant')
 		shutit.install('xterm')
+		shutit.logout()
 		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/go/bin/linux/amd64:/data/src/github.com/openshift/origin/_output/local/go/bin:$PATH')
 		shutit.send('cd /data/src/github.com/openshift/origin')
 		shutit.send('make clean build')
@@ -89,15 +91,17 @@ class shutit_openshift_dev(ShutItModule):
 		# this is temporary, to make it persistent add it to .bash_profile
 		# redirect the logs to  /home/vagrant/openshift.log for easier debugging
 		shutit.send('sudo `which openshift` start --public-master=localhost &> openshift.log &')
-		shutit.send('sudo chmod +r /openshift.local.config/master/openshift-registry.kubeconfig')
-		shutit.send('sudo chmod +r /openshift.local.config/master/admin.kubeconfig')
-		shutit.send('oadm registry --create --credentials=/openshift.local.config/master/openshift-registry.kubeconfig --config=/openshift.local.config/master/admin.kubeconfig')
+		shutit.send_until('ls openshift.local.config/master/openshift-registry.kubeconfig | wc -l','1')
+		shutit.send('sudo chmod +r openshift.local.config/master/openshift-registry.kubeconfig')
+		shutit.send('sudo chmod +r openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oadm registry --create --credentials=openshift.local.config/master/openshift-registry.kubeconfig --config=openshift.local.config/master/admin.kubeconfig')
 		# load image stream
-		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/image-streams/image-streams-centos7.json -n openshift --config=/openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oc create -f examples/image-streams/image-streams-centos7.json -n openshift --config=openshift.local.config/master/admin.kubeconfig')
 		# load templates
-		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/sample-app/application-template-stibuild.json -n openshift --config=/openshift.local.config/master/admin.kubeconfig')
-		shutit.send('oc create -f /data/src/github.com/openshift/origin/examples/db-templates --config=openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oc create -f examples/sample-app/application-template-stibuild.json -n openshift --config=openshift.local.config/master/admin.kubeconfig')
+		shutit.send('oc create -f examples/db-templates --config=openshift.local.config/master/admin.kubeconfig')
 		shutit.send('echo now navigate to: https://localhost:8443/console')
+		shutit.pause_point('')
 		shutit.logout()
 		return True
 
