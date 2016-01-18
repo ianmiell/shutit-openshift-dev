@@ -82,7 +82,7 @@ class shutit_openshift_dev(ShutItModule):
 		shutit.send('vagrant up')
 		shutit.login(command='vagrant ssh')
 		shutit.install('xterm')
-		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/go/bin/linux/amd64:/data/src/github.com/openshift/origin/_output/local/go/bin$PATH')
+		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/go/bin/linux/amd64:/data/src/github.com/openshift/origin/_output/local/go/bin:$PATH')
 		shutit.send('cd /data/src/github.com/openshift/origin')
 		shutit.send('make clean build')
 		# update path to include binaries for oc, oadm, etc
