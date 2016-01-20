@@ -83,15 +83,20 @@ class shutit_openshift_dev(ShutItModule):
 		shutit.login(command='vagrant ssh')
 		shutit.login(password='vagrant')
 		shutit.install('xterm')
-		shutit.logout()
 		shutit.send('export PATH=/data/src/github.com/openshift/origin/_output/local/go/bin/linux/amd64:/data/src/github.com/openshift/origin/_output/local/go/bin:$PATH')
 		shutit.send('cd /data/src/github.com/openshift/origin')
 		shutit.send('make clean build')
 		# update path to include binaries for oc, oadm, etc
 		# this is temporary, to make it persistent add it to .bash_profile
 		# redirect the logs to  /home/vagrant/openshift.log for easier debugging
-		shutit.send('sudo `which openshift` start --public-master=localhost &> openshift.log &')
+		# TODO: make this configurable, defaulting to localhost instead of shutit.tk
+		server = 'localhost'
+		server = 'shutit.tk'
+		#shutit.send('sudo `which openshift` start --public-master=' + server + ' --write-config=openshift.local.config &> openshift.log &')
+		shutit.send('sudo `which openshift` start --public-master=' + server + ' &> openshift.log &')
 		shutit.send_until('ls openshift.local.config/master/openshift-registry.kubeconfig | wc -l','1')
+		shutit.send('mkdir -p ~/.kube')
+		shutit.send('cp openshift.local.config/master/admin.kubeconfig ~/.kube/config')
 		shutit.send('sudo chmod +r openshift.local.config/master/openshift-registry.kubeconfig')
 		shutit.send('sudo chmod +r openshift.local.config/master/admin.kubeconfig')
 		shutit.send('oadm registry --create --credentials=openshift.local.config/master/openshift-registry.kubeconfig --config=openshift.local.config/master/admin.kubeconfig')
@@ -100,8 +105,10 @@ class shutit_openshift_dev(ShutItModule):
 		# load templates
 		shutit.send('oc create -f examples/sample-app/application-template-stibuild.json -n openshift --config=openshift.local.config/master/admin.kubeconfig')
 		shutit.send('oc create -f examples/db-templates --config=openshift.local.config/master/admin.kubeconfig')
+		# TODO: set the config up, change hostname to shutit.tk, copy kubeconfig so that we can be admin
 		shutit.send('echo now navigate to: https://localhost:8443/console')
 		shutit.pause_point('')
+		shutit.logout()
 		shutit.logout()
 		return True
 
